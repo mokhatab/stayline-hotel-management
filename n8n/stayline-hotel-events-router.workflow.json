@@ -1,0 +1,286 @@
+{
+  "name": "Stayline Hotel Events Router",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stayline-hotel-events",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0001",
+      "name": "Stayline Hotel Events Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ],
+      "webhookId": "stayline-hotel-events"
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "booking-created-condition",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "BookingCreated",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "BookingCreated"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "checked-in-condition",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "BookingCheckedIn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CheckIn"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "checked-out-condition",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "BookingCheckedOut",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CheckOut"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "ignoreCase": false,
+          "allMatchingOutputs": false
+        }
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0002",
+      "name": "Route by Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "booking-created-route",
+              "name": "route",
+              "value": "booking-created",
+              "type": "string"
+            },
+            {
+              "id": "booking-created-event-type",
+              "name": "event_type",
+              "value": "={{ $json.type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0003",
+      "name": "BookingCreated Branch",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -120,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "check-in-route",
+              "name": "route",
+              "value": "check-in",
+              "type": "string"
+            },
+            {
+              "id": "check-in-event-type",
+              "name": "event_type",
+              "value": "={{ $json.type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0004",
+      "name": "CheckIn Branch",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "check-out-route",
+              "name": "route",
+              "value": "check-out",
+              "type": "string"
+            },
+            {
+              "id": "check-out-event-type",
+              "name": "event_type",
+              "value": "={{ $json.type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0005",
+      "name": "CheckOut Branch",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -120,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "unsupported-route",
+              "name": "route",
+              "value": "unsupported",
+              "type": "string"
+            },
+            {
+              "id": "unsupported-event-type",
+              "name": "event_type",
+              "value": "={{ $json.type || 'unknown' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0006",
+      "name": "Unsupported Event Branch",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -120,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Stayline Hotel Events Webhook": {
+      "main": [
+        [
+          {
+            "node": "Route by Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event Type": {
+      "main": [
+        [
+          {
+            "node": "BookingCreated Branch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CheckIn Branch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CheckOut Branch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unsupported Event Branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7f4f2cb-4f38-4a92-9f4d-8c7a9e9f0099",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

@@ -1,0 +1,20 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Clean Architecture starter for hotel management operations"
+requires-python = ">=3.11"
+dependencies = [
+    "psycopg[binary]>=3.3.6",
+    "pymupdf>=1.28.2",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "pywebview>=5.4",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

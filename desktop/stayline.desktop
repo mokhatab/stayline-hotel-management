@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Stayline Hotel Management
+Comment=Local hotel operations desktop app
+Exec=sh -c 'cd "/path/to/stayline-hotel-management" && .venv/bin/python desktop/run_desktop.py'
+Terminal=true
+Categories=Office;Utility;
