@@ -1,0 +1,71 @@
+name: Python package
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    name: Unit tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # pyproject.toml declares requires-python >=3.11
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "psycopg[binary]>=3.3.6" pytest flake8
+      - name: Lint with flake8
+        run: |
+          # stop the build on syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,.venv
+          # style findings are warnings only
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .git,.venv
+      - name: Test with pytest
+        run: pytest
+
+  postgres-integration:
+    name: Concurrency test against PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: stayline
+          POSTGRES_PASSWORD: stayline
+          POSTGRES_DB: stayline_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stayline -d stayline_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # The test truncates tables: only ever point this at a throwaway database.
+      HOTEL_TEST_DATABASE_URL: postgresql://stayline:stayline@localhost:5432/stayline_test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "psycopg[binary]>=3.3.6" pytest
+      - name: Run booking concurrency test
+        run: pytest tests/test_booking_concurrency.py -v
